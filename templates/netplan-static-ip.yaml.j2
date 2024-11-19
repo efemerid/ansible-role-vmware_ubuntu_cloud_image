@@ -5,7 +5,9 @@ network:
       dhcp4: no
       addresses:
         - {{ static_ipv4 }}/{{ netmask }}
-      gateway4: {{ gateway }}
+      routes:
+        - to: default
+          via: {{ gateway }}
       nameservers:
 {% if dns_search|length > 0 %}
         search:

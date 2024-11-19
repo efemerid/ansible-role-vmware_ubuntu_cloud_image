@@ -1,5 +1,9 @@
 ---
 
+- name: set default user
+  set_fact:
+    ansible_user: "localadmin"
+
 - name: remove cloud-init network configuration file
   file:
     path: /etc/netplan/50-cloud-init.yaml
@@ -15,11 +19,16 @@
   register: netplan_template
 
 - name: apply network configuration
-  shell: "(sleep 1;netplan apply) &"
+  ansible.builtin.command:
+    cmd: "netplan apply"
   async: 15
   poll: 0
   become: yes
   when: netplan_template is changed
+
+- name: wait for network configuration
+  ansible.builtin.pause:
+    minutes: 1
 
 - name: use static IP address
   set_fact:

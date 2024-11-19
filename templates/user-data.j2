@@ -1,4 +1,9 @@
 #cloud-config
+
+system_info:
+  default_user:
+    name: localadmin
+
 {% if password is defined %}
 password: {{ password }}
 chpasswd: { expire: False }

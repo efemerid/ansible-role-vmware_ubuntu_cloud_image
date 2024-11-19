@@ -35,11 +35,18 @@
     username: "{{ vcenter_username | default(omit) }}"
     password: "{{ vcenter_password | default(omit) }}"
     validate_certs: "{{ vcenter_validate_certs | default(omit) }}"
+    cluster: "{{ vmware_cluster }}"
+    datacenter: "{{ vmware_datacenter }}"
     name: "{{ vm_guestname }}"
     annotation: "{{ annotation | default(omit) }}"
     hardware: "{{ hardware | default(omit) }}"
     customvalues: "{{ customvalues | default(omit) }}"
     advanced_settings: "{{ advanced_settings | default(omit) }}"
+    networks:
+    - name: "{{ vm_netname }}"
+      ip: "{{ ansible_host }}"
+      netmask: "{{ vm_netmask }}"
+      gateway: "{{ vm_gateway }}"
     state: present
   delegate_to: localhost
 
@@ -82,11 +89,16 @@
   set_fact:
     ansible_ssh_host: "{{ vm_facts.instance.ipv4 }}"
 
-- name: apply static IP configuration
-  include: configure-network.yml
-  when: static_ip is defined
+- name: Check static_ip
+  ansible.builtin.debug:
+    var: static_ip
 
-- name: gather host facts
-  setup:
+- name: wait for boot
+  ansible.builtin.pause:
+    minutes: 1
+
+- name: apply static IP configuration
+  include_tasks: configure-network.yml
+  when: static_ip is defined
 
 # vim: ts=2:sw=2:noautoindent:nosmartindent
